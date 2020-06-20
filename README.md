@@ -4,7 +4,7 @@ A light daemon used to detect if any malware appears in a given directory - espe
 
 Fork from previous project, CrappyAV.
 
-![](img/lmd_1.gif)
+![](img/lmd.gif)
 
 ## Specify a Directory
 LiteMD recurisvely calculates a hash of all files in a directory, and checks it against VirusTotal's database of MD5 malware hashes.
