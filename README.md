@@ -4,23 +4,30 @@ A light daemon used to detect if any malware appears in a given directory - espe
 
 Fork from previous project, CrappyAV.
 
-## Option Menu
+## Specify a Directory
+LiteMD recurisvely calculates a hash of all files in a directory, and checks it against VirusTotal's database of MD5 malware hashes.
 ![](img/crappyavheader.png)
 
 
 
-## Quarantine Malware
+## Find Malware
 
-Take your suspected malware and shove it in a place where the sun doesn't shine. CrappyAV will strip all permissions and put the file in virtual timeout.
+LiteMD can detect malware from the calculcated hash file, and present it to the user. Below is an example of detection of the EICAR test string.
 
-![](img/hashcheck.gif)
+![](img/malfiles.png)
 
 ## Usage
 
 Run the script with:
 
 ```
-./install.sh install
+./install.sh
+```
+
+Cleanly uninstall with:
+
+```
+./install.sh -r
 ```
 
 If you're using ZSH, you'll need to mapfile module.

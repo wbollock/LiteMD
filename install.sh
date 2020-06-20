@@ -55,13 +55,22 @@ removeLMD() {
 		n|N|"") exit ;;
 		*) echo -e "${RED}Error...${NC}" && sleep .5
 	esac
-    echo ""
+    
+
+    # if $file exists, rm it
+
+    if [ -f $hashDir/$fullHashFile ]; then
     echo "Removing hashes"
     rm -f "$hashDir"/"$fullHashFile"
+    elif [ -f "$hashDir"/"$kvpairs" ]; then
     echo "Removing calculated hashes of directory"
     rm -f "$hashDir"/"$kvpairs"
+    elif [ -f "$hashDir"/"$malFiles" ]; then
     echo "Removing potential malicious file list"
     rm -f "$hashDir"/"$malFiles"
+    fi
+
+    echo "Removal complete."
 }
 
 allHashes(){
@@ -93,13 +102,13 @@ allHashes(){
     # have to adjust url based on file number
         if ((i < 10 ))
         then
-            wget -O $hashDir/"$hashfile"_$i https://virusshare.com/hashes/VirusShare_0000$i.md5
+            wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashes/VirusShare_0000"$i".md5
         elif ((i >= 10 && i < 100 ))
         then
-            wget -O $hashDir/"$hashfile"_$i https://virusshare.com/hashes/VirusShare_000$i.md5
+            wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashes/VirusShare_000"$i".md5
         elif ((i >= 100 ))
         then
-            wget -O $hashDir/"$hashfile"_$i https://virusshare.com/hashes/VirusShare_00$i.md5
+            wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashes/VirusShare_00"$i".md5
         fi
 
     done
@@ -145,10 +154,25 @@ hashCheck(){
     fi
 
 
+    
+    # shellchk doesnt like for file in $(find "$virusDir" -type f);
+
+    if [ -f "$hashDir"/"$malFiles" ]; then
+        echo -e "${RED}Overwrite previous hash results? [y/N]${NC}"
+        read -r choice
+        case $choice in
+        # N default letter
+            y|Y) rm -f "$hashDir"/"$malFiles" "$hashDir"/"$kvpairs" ;;
+            n|N|"")  ;;
+            *) echo -e "${RED}Error...${NC}" && sleep .5
+        esac
+    fi
+
     echo "Calculating hashes of all files in $virusDir..."
     sleep 2
-    for file in $(find $virusDir -type f);
-    do 
+
+    while IFS= read -r -d '' file
+    do
         fileHash=$(md5sum "$file"  | head -n1 | awk '{print $1;}')
         echo "$file=$fileHash" >> "$hashDir"/"$kvpairs"; 
         # $kvpairs now has list like this:
@@ -156,11 +180,13 @@ hashCheck(){
         # https://stackoverflow.com/questions/4990575/need-bash-shell-script-for-reading-name-value-pairs-from-a-file
 
         if grep -q "$fileHash" "$hashDir"/"$fullHashFile"; then 
-            echo "-----Malicious File DETECTED - $file----" >> "$hashDir"/"$malFiles"; 
-            echo "$file=$fileHash" >> "$hashDir"/"$malFiles"; 
-            echo "-----Malicious File $file END-----" >> "$hashDir"/"$malFiles"; 
+            {
+                echo "-----Malicious File DETECTED - $file----"  
+                echo "$file=$fileHash" 
+                echo "-----Malicious File $file END-----" 
+            } >> "$hashDir"/"$malFiles";
         fi
-    done
+    done <    <(find "$virusDir" -type f  -print0);
     exit
 
     #fileHash=$(md5sum "$scaryVirus"  | head -n1 | awk '{print $1;}')
@@ -214,6 +240,9 @@ while getopts ":r:" opt; do
       removeLMD
       exit 1
       ;;
+     *)
+      echo "Invalid flag."
+      exit
   esac
 done
 
@@ -225,8 +254,8 @@ echo "Install Commencing"
 #if -e [ /etc/cron.X/ then...]
 # else, pacman -S cronie
 
-
-echo -e "${RED}Please note downloading all of these hashes requires ~1.1GB of disk space and bandwith.${NC}"
+echo ""
+echo -e "${RED}**Please** note downloading all of these hashes requires ~1.1GB of disk space and bandwith.${NC}"
 echo ""
 sleep 1
 echo -e "${RED}Do you want to download all hashes? [y/N]${NC}"
