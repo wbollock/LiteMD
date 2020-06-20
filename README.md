@@ -2,7 +2,7 @@
 
 A light daemon used to detect if any malware appears in a given directory - especially useful on a SFTP or web hosting server. The biggest threat is Windows malware downloaded by the user.
 
-Fork from previous project, CrappyAv.
+Fork from previous project, CrappyAV.
 
 ## Option Menu
 ![](img/crappyavheader.png)
@@ -14,12 +14,6 @@ Fork from previous project, CrappyAv.
 Take your suspected malware and shove it in a place where the sun doesn't shine. CrappyAV will strip all permissions and put the file in virtual timeout.
 
 ![](img/hashcheck.gif)
-
-## Web Status (Optional)
-
-Show off to the world just how secure you are! 
-
-![](img/web1.gif)
 
 ## Usage
 

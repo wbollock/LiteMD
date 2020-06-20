@@ -21,9 +21,13 @@
 hashDir=hashes
 hashfile=md5_hash
 fullHashFile=hashlist.txt
+# key value pairs of hash dir
+kvpairs=kvpairs.txt
+malFiles=MALICIOUSFILES
 
 # to have a file we can verify the checking mechanism against
 virusTest=testvirus.txt
+
 
 # hash source
 hashSource="https://virusshare.com/hashes.4n6"
@@ -43,7 +47,7 @@ YELLOW='\033[0;33m'
 removeLMD() {
     # TODO: removal of hashes and related files, probably the crontab too
     echo "Starting removal of LiteMD."
-    echo -e "${RED}Proceed? ${NC}"
+    echo -e "${RED}Proceed? [y/N]${NC}"
     read -r rmChoice
     case $rmChoice in
     # N default letter
@@ -53,8 +57,11 @@ removeLMD() {
 	esac
     echo ""
     echo "Removing hashes"
-    rm -f $hashDir/$fullHashFile
-
+    rm -f "$hashDir"/"$fullHashFile"
+    echo "Removing calculated hashes of directory"
+    rm -f "$hashDir"/"$kvpairs"
+    echo "Removing potential malicious file list"
+    rm -f "$hashDir"/"$malFiles"
 }
 
 allHashes(){
@@ -62,7 +69,8 @@ allHashes(){
     if [ -f $hashDir/$fullHashFile ]; then
         echo -e "${BLUE}Hashes already found. Skipping download.${NC}"
         echo "Remove $hashDir/$fullHashFile if you believe this is in error."
-        return #break out of allHashes
+        hashCheck #break out of allHashes
+        return
     fi
 
     # root page of web directory
@@ -97,7 +105,7 @@ allHashes(){
     done
  
     # clean up my earlier curl sins
-    rm $hashRootPage
+    rm -f $hashRootPage
 
     sleep 2
     echo -e "${RED}Trimming and combining files...${NC}"
@@ -113,6 +121,90 @@ allHashes(){
     # hashlist.txt should be 1.1G
     done
 
+
+
+    hashCheck
+}
+
+# TODO: cron should run this function again
+hashCheck(){
+    echo -e "${BLUE}Please specify the directory you'd like LiteMD to focus on:${NC}"
+    # example: Arch Apache2 default = /srv/http
+    read -r virusDir
+
+    if [ ! -f $hashDir/$kvpairs ]; then
+        # used to store $file=$hash
+        touch $hashDir/$kvpairs
+    fi
+
+    if [ ! -f $hashDir/$malFiles ]; then
+        # used to store path of $files that are potentially malicious and their hash value
+        touch $hashDir/$malFiles
+        echo "------------LiteMD's list of potentially malicious files----------" >> "$hashDir"/"$malFiles"
+
+    fi
+
+
+    echo "Calculating hashes of all files in $virusDir..."
+    sleep 2
+    for file in $(find $virusDir -type f);
+    do 
+        fileHash=$(md5sum "$file"  | head -n1 | awk '{print $1;}')
+        echo "$file=$fileHash" >> "$hashDir"/"$kvpairs"; 
+        # $kvpairs now has list like this:
+        # /srv/http/LIS5362/.git/hooks/pre-applypatch.sample=054f9ffb8bfe04a599751cc757226dda
+        # https://stackoverflow.com/questions/4990575/need-bash-shell-script-for-reading-name-value-pairs-from-a-file
+
+        if grep -q "$fileHash" "$hashDir"/"$fullHashFile"; then 
+            echo "-----Malicious File DETECTED - $file----" >> "$hashDir"/"$malFiles"; 
+            echo "$file=$fileHash" >> "$hashDir"/"$malFiles"; 
+            echo "-----Malicious File $file END-----" >> "$hashDir"/"$malFiles"; 
+        fi
+    done
+    exit
+
+    #fileHash=$(md5sum "$scaryVirus"  | head -n1 | awk '{print $1;}')
+
+    #echo "Thanks for that. Doing some really smart algorithm..."
+    #sleep 1
+
+    #echo "File hash is: $fileHash"
+    #sleep 1
+
+    # Compare hash of user file to my big list of hashes
+    # 48fe63b00f90279979cc4ea85446351f  testclean.txt
+    # ed0335c6becd00a2276481bb7561b743  testvirus.txt
+    # if [ -f "$hashDir"/"$fullHashFile" ]; then
+    #     if grep -q "$fileHash" "$hashDir"/"$fullHashFile"; then
+    #         echo -e "${RED}Match found! If you actually suspect this file is malicious, please .${NC}"
+    #         echo ""
+    #         echo -e "Would you like to quarantine ${RED}$scaryVirus${NC}?"
+    #         echo -e "It will be moved to the folder ${BLUE}jail${NC} and stripped of all permissions. [y/N]"
+    #         read -r quarChoice
+    #         case $quarChoice in
+    #             y|Y) sudo chmod 000 $scaryVirus
+    #                  sudo mv "$scaryVirus" jail/
+    #                  echo ""
+    #                  echo -e "$scaryVirus has been moved to ${BLUE}jail${NC}."
+    #                  sudo ls -l jail;;
+    #             n|N|"") echo "$scaryVirus will not be quarantined."
+    #             sleep 1 ;;
+    #             *) echo -e "${RED}Error...${NC}" && sleep .5
+    #         esac
+
+    #     else
+    #         echo -e "${BLUE}Your file is safe. Chmod 777 to your heart's desire.${NC}"
+    #     fi
+    # else
+    #     echo -e "${YELLOW} Oh no. Couldn't find any hashes. Did you download virus definitions?${NC}"
+    # fi
+
+    #   if [ -f webflag ]; then
+    #   # get file run against hashes
+    #   sed -ri "s@<p(|\s+[^>]*)>Last file checked against hashes:(.*?)<\/p\s*>@<p>Last file checked against hashes: $scaryVirus</p>@g" crappyavweb/index.html
+    #  fi
+
+    # sleep 3
 
 }
 
