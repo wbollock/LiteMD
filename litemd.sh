@@ -2,48 +2,27 @@
 
 #================================================================
 #% SYNOPSIS
-#+    CrappyAV
+#+    LiteMD
 #%
 #% DESCRIPTION
-#%    A terrible CLI AV. Grabs MD5 hashes of virus files 
-#%    and lets the user scan files to see if 
-#%    they match against known virus hashes.
+#%    The main functions file of LiteMD.
 #%
-#% USAGE
-#%    ./crappav.sh (no parameter options)
+#%
 #%
 #================================================================
 
-# Spitballing Future Features:
-# Real time scanning, or scan recent files in /home/ directories (cron job maybe?)
-# Maybe expand it to be a small security platform.. check for Root access on SSH... other smart security things..
-# files to protect/monitor? (/etc/shadow, /etc/passwd, /etc/sshd_config, ufw rules?)
-# will need a daemon (systemd)
-# also remove daemon
-# convert to a database? useful? sqlite?
-# modern HIDS seem to scan 'relevant objects' in system, produce database of them.. important system files?
-# can choose what files you want to make sure dont change? more of an auditor then?
-# cav acronym is taken by comodo av.. damn
+# Future Features:
+# Provide clean install and uninstall
+# Have user specify one directory
+# Perform hash check on all files in that directory
+# Use cron to specify interval to check that directory for hash files again
+# Display in MOTD and/or log if malware is found
 
 
 # EICAR test string approved :)
 
-# Summer Semester Goals
-# 1. HIDS in some sort
-# a) Index files the user wants to protect (give recommended options)
-# b) Create a hash of those values with kv-bash
-# b1) https://stackoverflow.com/questions/14370133/is-there-a-way-to-create-key-value-pairs-in-bash-script
-# c) Create a daemon that monitors those every X minutes/hours
-# d) Use mail or create a file that reports if any of those hash files changed (or MOTD??)
-
-
-
 # 2. Better practices
 # a) Decide on curl OR wget
-
-
-# Summer Semester Completed
-# 1. Better dynamic handling of amount of pages on virustotal
 
 hashDir=hashes
 hashfile=md5_hash
