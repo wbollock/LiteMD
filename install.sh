@@ -73,6 +73,20 @@ removeLMD() {
     echo "Removal complete."
 }
 
+requirements(){
+
+    echo -e "${RED}Please note this project is designed for Arch Linux.${NC}"
+    echo "If you are one another distro, just make sure you have wget and cron/cronie. You probably do."
+
+    echo ""
+    echo "Installing requirements:"
+
+    sudo pacman -S --needed - < pkglist.txt
+
+    allHashes
+
+}
+
 allHashes(){
 
     if [ -f $hashDir/$fullHashFile ]; then
@@ -81,6 +95,12 @@ allHashes(){
         hashCheck #break out of allHashes
         return
     fi
+
+    echo -e "${RED}**Please** note downloading all of these hashes requires ~1.1GB of disk space and bandwith.${NC}"
+    echo ""
+    sleep 1
+    echo -e "${RED}Do you want to download all hashes? [y/N]${NC}"
+    read -r hashChoice
 
     # root page of web directory
     hashRootPage="hashPage.txt"
@@ -255,14 +275,10 @@ echo "Install Commencing"
 # else, pacman -S cronie
 
 echo ""
-echo -e "${RED}**Please** note downloading all of these hashes requires ~1.1GB of disk space and bandwith.${NC}"
-echo ""
-sleep 1
-echo -e "${RED}Do you want to download all hashes? [y/N]${NC}"
-read -r hashChoice
+
 case $hashChoice in
 # N default letter
-	y|Y) allHashes ;;
+	y|Y) requirements ;;
 	n|N|"")  ;;
 	*) echo -e "${RED}Error...${NC}" && sleep .5
 esac
