@@ -8,6 +8,7 @@ Fork from previous project, CrappyAV.
 
 ## Specify a Directory
 LiteMD recurisvely calculates a hash of all files in a directory, and checks it against VirusTotal's database of MD5 malware hashes.
+
 ![](img/directoryhash.png)
 
 
