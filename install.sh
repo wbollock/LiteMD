@@ -80,6 +80,7 @@ requirements(){
 
     echo ""
     echo "Installing requirements:"
+    cat pkglist.txt
 
     sudo pacman -S --needed - < pkglist.txt
 
@@ -100,7 +101,15 @@ allHashes(){
     echo ""
     sleep 1
     echo -e "${RED}Do you want to download all hashes? [y/N]${NC}"
-    read -r hashChoice
+    read -r choice
+    
+    case $choice in
+    # N default letter
+        y|Y)  ;;
+        n|N|"") exit  ;;
+        *) echo -e "${RED}Error...${NC}" && sleep .5
+    esac
+
 
     # root page of web directory
     hashRootPage="hashPage.txt"
@@ -252,6 +261,29 @@ hashCheck(){
 
     # sleep 3
 
+    cronjobAdd
+}
+
+cronjobAdd() {
+
+    echo -e "${RED}Would you like to add a cronjob to monitor this directory at an interval? [y/N]${NC}"
+    read -r choice
+    
+    case $choice in
+    # N default letter
+        y|Y)  ;;
+        n|N|"") exit  ;;
+        *) echo -e "${RED}Error...${NC}" && sleep .5
+    esac
+
+    # TODO:
+    # ask user frequency, give a few options
+    # then put that cronjob into cron.d or something
+    # will need to alert user to new changes - leave that last
+    # start by updating malfiles if match is found
+    # and rerunning the function that
+    # probably easiest to just have cron call litemd.sh that just has the hashing function
+
 }
 
 while getopts ":r:" opt; do
@@ -274,14 +306,7 @@ echo "Install Commencing"
 #if -e [ /etc/cron.X/ then...]
 # else, pacman -S cronie
 
-echo ""
-
-case $hashChoice in
-# N default letter
-	y|Y) requirements ;;
-	n|N|"")  ;;
-	*) echo -e "${RED}Error...${NC}" && sleep .5
-esac
+requirements
 
 
 
