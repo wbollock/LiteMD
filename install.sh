@@ -27,6 +27,7 @@ malFiles=MALICIOUSFILES
 
 # to have a file we can verify the checking mechanism against
 virusTest=testvirus.txt
+scriptLocation=$(readlink -f litemd.sh)
 
 
 # hash source
@@ -169,6 +170,8 @@ hashCheck(){
     echo -e "${BLUE}Please specify the directory you'd like LiteMD to focus on:${NC}"
     # example: Arch Apache2 default = /srv/http
     read -r virusDir
+    echo "$virusDir" > virusDir.info
+    # for cron job
 
     if [ ! -f $hashDir/$kvpairs ]; then
         # used to store $file=$hash
@@ -192,12 +195,13 @@ hashCheck(){
         case $choice in
         # N default letter
             y|Y) rm -f "$hashDir"/"$malFiles" "$hashDir"/"$kvpairs" ;;
-            n|N|"")  ;;
+            n|N|"") return  ;;
             *) echo -e "${RED}Error...${NC}" && sleep .5
         esac
     fi
 
     echo "Calculating hashes of all files in $virusDir..."
+    echo "This could take a while on a big directory."
     sleep 2
 
     while IFS= read -r -d '' file
@@ -210,56 +214,14 @@ hashCheck(){
 
         if grep -q "$fileHash" "$hashDir"/"$fullHashFile"; then 
             {
-                echo "-----Malicious File DETECTED - $file----"  
+                echo "-----Malicious File DETECTED - $file----"
+                echo "File detected on $(date)"  
                 echo "$file=$fileHash" 
                 echo "-----Malicious File $file END-----" 
             } >> "$hashDir"/"$malFiles";
         fi
     done <    <(find "$virusDir" -type f  -print0);
     exit
-
-    #fileHash=$(md5sum "$scaryVirus"  | head -n1 | awk '{print $1;}')
-
-    #echo "Thanks for that. Doing some really smart algorithm..."
-    #sleep 1
-
-    #echo "File hash is: $fileHash"
-    #sleep 1
-
-    # Compare hash of user file to my big list of hashes
-    # 48fe63b00f90279979cc4ea85446351f  testclean.txt
-    # ed0335c6becd00a2276481bb7561b743  testvirus.txt
-    # if [ -f "$hashDir"/"$fullHashFile" ]; then
-    #     if grep -q "$fileHash" "$hashDir"/"$fullHashFile"; then
-    #         echo -e "${RED}Match found! If you actually suspect this file is malicious, please .${NC}"
-    #         echo ""
-    #         echo -e "Would you like to quarantine ${RED}$scaryVirus${NC}?"
-    #         echo -e "It will be moved to the folder ${BLUE}jail${NC} and stripped of all permissions. [y/N]"
-    #         read -r quarChoice
-    #         case $quarChoice in
-    #             y|Y) sudo chmod 000 $scaryVirus
-    #                  sudo mv "$scaryVirus" jail/
-    #                  echo ""
-    #                  echo -e "$scaryVirus has been moved to ${BLUE}jail${NC}."
-    #                  sudo ls -l jail;;
-    #             n|N|"") echo "$scaryVirus will not be quarantined."
-    #             sleep 1 ;;
-    #             *) echo -e "${RED}Error...${NC}" && sleep .5
-    #         esac
-
-    #     else
-    #         echo -e "${BLUE}Your file is safe. Chmod 777 to your heart's desire.${NC}"
-    #     fi
-    # else
-    #     echo -e "${YELLOW} Oh no. Couldn't find any hashes. Did you download virus definitions?${NC}"
-    # fi
-
-    #   if [ -f webflag ]; then
-    #   # get file run against hashes
-    #   sed -ri "s@<p(|\s+[^>]*)>Last file checked against hashes:(.*?)<\/p\s*>@<p>Last file checked against hashes: $scaryVirus</p>@g" crappyavweb/index.html
-    #  fi
-
-    # sleep 3
 
     cronjobAdd
 }
@@ -276,14 +238,41 @@ cronjobAdd() {
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
 
+
+
     # TODO:
     # ask user frequency, give a few options
-    # then put that cronjob into cron.d or something
-    # will need to alert user to new changes - leave that last
-    # start by updating malfiles if match is found
-    # and rerunning the function that
-    # probably easiest to just have cron call litemd.sh that just has the hashing function
 
+    echo -e "${BLUE}Please choose the interval you'd like for the cronjob:${NC}"
+    echo "(Defaults to 3am if day/week)"
+    echo "1) Every Hour"
+    # 0 * * * *
+    echo "2) Every Day"
+    # 0 3 * * *
+    echo "3) Every Week"    
+    # 0 3 * * 0
+    echo ""
+    read -r choice
+    case $choice in
+    
+    # N default letter
+        1) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 * * * * $scriptLocation") | crontab - ;;
+        2) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 3 * * * $scriptLocation") | crontab - ;;
+        3) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 3 * * 0 $scriptLocation") | crontab - ;;
+        *) echo -e "${RED}Error...${NC}" && sleep .5
+    esac
+    #! (crontab -l | grep -q "SCRIPT_FILENAME") && (crontab -l; echo "20 10 * * * SCRIPT_FILENAME") | crontab -
+
+    # then put that cronjob into cron.d or something
+
+    echo "Completed. LiteMD will recheck $virusDir for the malicious files at the interval you chose."
+
+
+    # will need to alert user to new changes - leave that last
+
+
+    # start by updating malfiles if match is found - nvm just go scorched earth
+    
 }
 
 while getopts ":r:" opt; do

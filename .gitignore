@@ -1,3 +1,4 @@
 #ignore files in hash directory
 hashes/*
 jail/*
+virusDir.info
