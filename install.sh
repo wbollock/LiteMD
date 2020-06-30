@@ -78,7 +78,19 @@ removeLMD() {
 requirements(){
 
     echo -e "${RED}Please note this project is designed for Arch Linux.${NC}"
-    echo "If you are one another distro, just make sure you have wget and cron/cronie. You probably do."
+    #echo "If you are one another distro, just make sure you have wget and cron/cronie. You probably do."
+
+    # if pacman not insatlled
+    if [ ! -e $(which pacman) ]; then
+    echo -e "${RED}Pacman not detected. You're probably not on Arch/Manjaro. Proceed anyway? Who knows what may break. [y/N] ${NC}"
+    read -r choice
+        case $rmChoice in
+        # N default letter
+            y|Y) allHashes ;;
+            n|N|"") exit ;;
+            *) echo -e "${RED}Error...${NC}" && sleep .5
+        esac
+    fi
 
     echo ""
     echo "Installing requirements:"
