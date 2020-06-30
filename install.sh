@@ -48,6 +48,8 @@ YELLOW='\033[0;33m'
 # removeLMD- Uninstalls LMD
 removeLMD() {
     # TODO: removal of hashes and related files, probably the crontab too
+    # TODO: yes please figure out how to purge cron of my entries
+    # maybe switch from users cron to system cron?!?!
     echo "Starting removal of LiteMD."
     echo -e "${RED}Proceed? [y/N]${NC}"
     read -r rmChoice
@@ -113,13 +115,15 @@ allHashes(){
 
     echo -e "${RED}**Please** note downloading all of these hashes requires ~1.1GB of disk space and bandwith.${NC}"
     echo ""
+    
     sleep 1
     echo -e "${RED}Do you want to download all hashes? [y/N]${NC}"
     read -r choice
     
     case $choice in
     # N default letter
-        y|Y)  ;;
+        y|Y) echo "It is recommended you get up, drink water, get some tea, and leave the terminal running. This takes a while."
+        sleep 5 ;;
         n|N|"") exit  ;;
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
