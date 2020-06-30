@@ -24,6 +24,7 @@ fullHashFile=hashlist.txt
 # key value pairs of hash dir
 kvpairs=kvpairs.txt
 malFiles=MALICIOUSFILES
+virusDir=$(cat virusDir.info)
 
 # to have a file we can verify the checking mechanism against
 virusTest=testvirus.txt
@@ -169,8 +170,21 @@ allHashes(){
 hashCheck(){
     echo -e "${BLUE}Please specify the directory you'd like LiteMD to focus on:${NC}"
     # example: Arch Apache2 default = /srv/http
+    if [ -f virusDir.info ]; then
+    echo ""
+    echo "Do you still want to use $(cat virusDir.info) [y/N] ?"
+    read -r choice
+        case $choice in
+        # N default letter
+            y|Y)  ;;
+            n|N|"") echo "Alright, please specify the directory you'd like LiteMD to focus on:" ; read -r virusDir; echo "$virusDir" > virusDir.info  ;;
+            *) echo -e "${RED}Error...${NC}" && sleep .5
+        esac
+    else
+    # first run
     read -r virusDir
     echo "$virusDir" > virusDir.info
+    fi
     # for cron job
 
     if [ ! -f $hashDir/$kvpairs ]; then
@@ -195,7 +209,7 @@ hashCheck(){
         case $choice in
         # N default letter
             y|Y) rm -f "$hashDir"/"$malFiles" "$hashDir"/"$kvpairs" ;;
-            n|N|"") return  ;;
+            n|N|"") cronjobAdd  ;;
             *) echo -e "${RED}Error...${NC}" && sleep .5
         esac
     fi
@@ -221,7 +235,7 @@ hashCheck(){
             } >> "$hashDir"/"$malFiles";
         fi
     done <    <(find "$virusDir" -type f  -print0);
-    exit
+    
 
     cronjobAdd
 }
@@ -242,30 +256,44 @@ cronjobAdd() {
 
     # TODO:
     # ask user frequency, give a few options
+    if ( crontab -l | grep -q "litemd.sh" ); then
+    echo -e "${RED}Crontab already found. Overwrite? [Y/n]${NC}"
+    # TODO: figure out a way to remove one specific entry in crontab -l and then replace it
+    echo "This will overwrite the entire user's crontab (crontab -r)"
+    echo "If you wish to avoid this, delete the offending line using (crontab -e)"
+    read -r choice
+        case $choice in
+        # N default letter
+            y|Y|"") crontab -r > /dev/null 2>&1 ;;
+            n|N)   ;;
+            *) echo -e "${RED}Error...${NC}" && sleep .5
+        esac
+    
+    fi
 
     echo -e "${BLUE}Please choose the interval you'd like for the cronjob:${NC}"
-    echo "(Defaults to 3am if day/week)"
+    echo "(Defaults to 3am of day/week, and will run under $(echo $USER))"
     echo "1) Every Hour"
     # 0 * * * *
     echo "2) Every Day"
     # 0 3 * * *
     echo "3) Every Week"    
     # 0 3 * * 0
-    echo ""
     read -r choice
     case $choice in
     
     # N default letter
-        1) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 * * * * $scriptLocation") | crontab - ;;
-        2) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 3 * * * $scriptLocation") | crontab - ;;
-        3) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 3 * * 0 $scriptLocation") | crontab - ;;
+        1) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 * * * * $scriptLocation") | crontab - > /dev/null 2>&1 ;;
+        2) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 3 * * * $scriptLocation") | crontab - > /dev/null 2>&1 ;;
+        3) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 3 * * 0 $scriptLocation") | crontab - > /dev/null 2>&1 ;;
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
     #! (crontab -l | grep -q "SCRIPT_FILENAME") && (crontab -l; echo "20 10 * * * SCRIPT_FILENAME") | crontab -
 
     # then put that cronjob into cron.d or something
-
-    echo "Completed. LiteMD will recheck $virusDir for the malicious files at the interval you chose."
+    echo ""
+    echo ""
+    echo "Thank you for using LiteMD. LiteMD will recheck $virusDir for the malicious files at the interval you chose."
 
 
     # will need to alert user to new changes - leave that last
@@ -273,6 +301,7 @@ cronjobAdd() {
 
     # start by updating malfiles if match is found - nvm just go scorched earth
     
+    exit
 }
 
 while getopts ":r:" opt; do
