@@ -6,17 +6,21 @@
 #%
 #% DESCRIPTION
 #%    Installer file for LiteMD
-#%
+#%    A lightweight Linux malware detector
 #% USAGE
 #%    ./install.sh $flag
 #% FLAGS
 #%     none   Install proceeds
 #%     -r     Uninstalls LiteMD and related files
 #%
+#% AUTHOR
+#% Will Bollock
+#%
+#% LICENSE
+#% MIT
 #%
 #================================================================
 
-# source: https://stackoverflow.com/questions/14447406/bash-shell-script-check-for-a-flag-and-grab-its-value
 
 hashDir=hashes
 hashfile=md5_hash
@@ -43,13 +47,18 @@ NC='\033[0m' # No Color
 BLUE='\033[0;34m'
 BOLD="\033[1m"
 YELLOW='\033[0;33m'
+
+# ||||TODOs||||
+# TODO: will need to alert user to new changes
+# I like putting it in the MOTD - hey $user, these files may be malicious
+# or hey $user, you're all clean
+# TODO: test on fresh system/install
+
+
 # FUNCTIONS:
 
 # removeLMD- Uninstalls LMD
 removeLMD() {
-    # TODO: removal of hashes and related files, probably the crontab too
-    # TODO: yes please figure out how to purge cron of my entries
-    # maybe switch from users cron to system cron?!?!
     echo "Starting removal of LiteMD."
     echo -e "${RED}Proceed? [y/N]${NC}"
     read -r rmChoice
@@ -74,16 +83,19 @@ removeLMD() {
     rm -f "$hashDir"/"$malFiles"
     fi
 
+    echo "Removing crontab entries"
+    # list crontab, take out the lite.md stuff, put back into crontab
+    crontab -l | grep -v 'litemd.sh'  | crontab -
+
     echo "Removal complete."
 }
 
 requirements(){
 
     echo -e "${RED}Please note this project is designed for Arch Linux.${NC}"
-    #echo "If you are one another distro, just make sure you have wget and cron/cronie. You probably do."
 
     # if pacman not insatlled
-    if [ ! -e $(which pacman) ]; then
+    if [ ! -e "/usr/bin/pacman" ]; then
     echo -e "${RED}Pacman not detected. You're probably not on Arch/Manjaro. Proceed anyway? Who knows what may break. [y/N] ${NC}"
     read -r choice
         case $rmChoice in
@@ -95,11 +107,14 @@ requirements(){
     fi
 
     echo ""
-    echo "Installing requirements:"
+    echo "Installing requirements (cron and wget), bypassing prompts:"
     cat pkglist.txt
+    echo ""
+    sleep 1
 
-    sudo pacman -S --needed - < pkglist.txt
+    sudo pacman -S --needed --noconfirm - < pkglist.txt
 
+    echo ""
     allHashes
 
 }
@@ -140,10 +155,9 @@ allHashes(){
     sleep 1
     # can iterate easily through the links. https://virusshare.com/hashes/VirusShare_00001.md5
     # https://virusshare.com/hashes/VirusShare_00002.md5, etc
-    # ends at 374
     # ends at highest number on page
 
-    #download all 374 hash files
+    #download all 374++ hash files
     for ((i=1;i<="$maxPage";i++))
     do
     # have to adjust url based on file number
@@ -174,7 +188,7 @@ allHashes(){
         cat "$file"_fixed >> $hashDir/$fullHashFile
         rm "$file"_fixed
         md5sum "$virusTest"  | head -n1 | awk '{print $1;}' >> $hashDir/$fullHashFile
-    # hashlist.txt should be 1.1G
+    # hashlist.txt should be ~1.1G+
     done
 
 
@@ -182,18 +196,18 @@ allHashes(){
     hashCheck
 }
 
-# TODO: cron should run this function again
+
 hashCheck(){
     echo -e "${BLUE}Please specify the directory you'd like LiteMD to focus on:${NC}"
     # example: Arch Apache2 default = /srv/http
     if [ -f virusDir.info ]; then
     echo ""
-    echo "Do you still want to use $(cat virusDir.info) [y/N] ?"
+    echo "Do you still want to use $(cat virusDir.info) [Y/n] ?"
     read -r choice
         case $choice in
         # N default letter
-            y|Y)  ;;
-            n|N|"") echo "Alright, please specify the directory you'd like LiteMD to focus on:" ; read -r virusDir; echo "$virusDir" > virusDir.info  ;;
+            y|Y|"")  ;;
+            n|N) echo "Alright, please specify the directory you'd like LiteMD to focus on:" ; read -r virusDir; echo "$virusDir" > virusDir.info  ;;
             *) echo -e "${RED}Error...${NC}" && sleep .5
         esac
     else
@@ -215,9 +229,7 @@ hashCheck(){
 
     fi
 
-
-    
-    # shellchk doesnt like for file in $(find "$virusDir" -type f);
+    # shellcheck doesnt like for file in $(find "$virusDir" -type f);
 
     if [ -f "$hashDir"/"$malFiles" ]; then
         echo -e "${RED}Overwrite previous hash results? [y/N]${NC}"
@@ -268,19 +280,11 @@ cronjobAdd() {
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
 
-
-
-    # TODO:
-    # ask user frequency, give a few options
     if ( crontab -l | grep -q "litemd.sh" ); then
     echo -e "${RED}Crontab already found. Overwrite? [Y/n]${NC}"
-    # TODO: figure out a way to remove one specific entry in crontab -l and then replace it
-    echo "This will overwrite the entire user's crontab (crontab -r)"
-    echo "If you wish to avoid this, delete the offending line using (crontab -e)"
     read -r choice
         case $choice in
-        # N default letter
-            y|Y|"") crontab -r > /dev/null 2>&1 ;;
+            y|Y|"") crontab -l | grep -v 'litemd.sh'  | crontab - /dev/null 2>&1 ;;
             n|N)   ;;
             *) echo -e "${RED}Error...${NC}" && sleep .5
         esac
@@ -297,25 +301,17 @@ cronjobAdd() {
     # 0 3 * * 0
     read -r choice
     case $choice in
-    
-    # N default letter
-        1) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 * * * * $scriptLocation") | crontab - > /dev/null 2>&1 ;;
-        2) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 3 * * * $scriptLocation") | crontab - > /dev/null 2>&1 ;;
-        3) ! (crontab -l | grep -q "litemd.sh") && (crontab -l; echo "0 3 * * 0 $scriptLocation") | crontab - > /dev/null 2>&1 ;;
+    # > /dev/null 2>&1
+        1) ! (crontab -l | grep -q "litemd.sh" ) && (crontab -l; echo "0 * * * * $scriptLocation" ) | crontab - ;;
+        2) ! (crontab -l | grep -q "litemd.sh"  ) && (crontab -l; echo "0 3 * * * $scriptLocation") | crontab - ;;
+        3) ! (crontab -l | grep -q "litemd.sh" ) && (crontab -l; echo "0 3 * * 0 $scriptLocation") | crontab - ;;
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
     #! (crontab -l | grep -q "SCRIPT_FILENAME") && (crontab -l; echo "20 10 * * * SCRIPT_FILENAME") | crontab -
 
-    # then put that cronjob into cron.d or something
     echo ""
     echo ""
     echo "Thank you for using LiteMD. LiteMD will recheck $virusDir for the malicious files at the interval you chose."
-
-
-    # will need to alert user to new changes - leave that last
-
-
-    # start by updating malfiles if match is found - nvm just go scorched earth
     
     exit
 }
@@ -332,14 +328,15 @@ while getopts ":r:" opt; do
   esac
 done
 
+echo -e "${RED}Welcome to LiteMD. This is a lightweight malware detector, best used on web servers or file servers with many users.${NC}"
+echo ""
+echo "Note: a capital letter [y/N] means that is the default response"
+echo ""
+echo "Install or Configuration Commencing"
+echo ""
+sleep 3
 
-echo "Install Commencing"
-
-# TODO: install cronie? on arch at least
-
-#if -e [ /etc/cron.X/ then...]
-# else, pacman -S cronie
-
+# start the function loop
 requirements
 
 
