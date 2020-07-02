@@ -128,18 +128,19 @@ allHashes(){
         return
     fi
 
-    echo -e "${RED}**Please** note downloading all of these hashes requires ~1.1GB of disk space and bandwith.${NC}"
+    echo -e "${RED}**Please** note downloading all of these hashes requires ~1.1GB of disk space.${NC}"
     echo ""
     
     sleep 1
-    echo -e "${RED}Do you want to download all hashes? [y/N]${NC}"
+    echo -e "${RED}Do you want to download all hashes? [Y/n]${NC}"
     read -r choice
     
     case $choice in
     # N default letter
-        y|Y) echo "It is recommended you get up, drink water, get some tea, and leave the terminal running. This takes a while."
-        sleep 5 ;;
-        n|N|"") exit  ;;
+        y|Y|"") echo "It is recommended you get up, drink water, get some tea, and leave the terminal running. This takes a while."
+        sleep 2
+        mkdir hashes ;;
+        n|N) exit  ;;
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
 
@@ -151,7 +152,8 @@ allHashes(){
     # use a slimey regex to get the max page number
     maxPage=$(grep -Eo '(00)[0-9]+' $hashRootPage | sort -rn | head -n 1 | cut -c 3-)
 
-    echo "Downloading $maxPage hash files"
+    echo -e "${RED}Downloading $maxPage hash files${NC}"
+    echo ""
     sleep 1
     # can iterate easily through the links. https://virusshare.com/hashes/VirusShare_00001.md5
     # https://virusshare.com/hashes/VirusShare_00002.md5, etc
@@ -198,11 +200,12 @@ allHashes(){
 
 
 hashCheck(){
-    echo -e "${BLUE}Please specify the directory you'd like LiteMD to focus on:${NC}"
+    echo ""
+    echo -e "${BLUE}Please specify the directory you'd like LiteMD to focus on (e.g /srv/http, /var/www/html):${NC}"
     # example: Arch Apache2 default = /srv/http
     if [ -f virusDir.info ]; then
     echo ""
-    echo "Do you still want to use $(cat virusDir.info) [Y/n] ?"
+    echo -e "${RED}Do you still want to use $(cat virusDir.info)? [Y/n] ${NC}"
     read -r choice
         case $choice in
         # N default letter
@@ -232,18 +235,18 @@ hashCheck(){
     # shellcheck doesnt like for file in $(find "$virusDir" -type f);
 
     if [ -f "$hashDir"/"$malFiles" ]; then
-        echo -e "${RED}Overwrite previous hash results? [y/N]${NC}"
+        echo -e "${RED}Overwrite previous hash results? [Y/n]${NC}"
         read -r choice
         case $choice in
         # N default letter
-            y|Y) rm -f "$hashDir"/"$malFiles" "$hashDir"/"$kvpairs" ;;
-            n|N|"") cronjobAdd  ;;
+            y|Y|"") rm -f "$hashDir"/"$malFiles" "$hashDir"/"$kvpairs" ;;
+            n|N) cronjobAdd  ;;
             *) echo -e "${RED}Error...${NC}" && sleep .5
         esac
     fi
 
     echo "Calculating hashes of all files in $virusDir..."
-    echo "This could take a while on a big directory."
+    echo "This could take a while on a big directory (recursive)."
     sleep 2
 
     while IFS= read -r -d '' file
@@ -270,13 +273,13 @@ hashCheck(){
 
 cronjobAdd() {
 
-    echo -e "${RED}Would you like to add a cronjob to monitor this directory at an interval? [y/N]${NC}"
+    echo -e "${RED}Would you like to add a cronjob to monitor this directory at an interval? [Y/n]${NC}"
     read -r choice
     
     case $choice in
     # N default letter
-        y|Y)  ;;
-        n|N|"") exit  ;;
+        y|Y|"")  ;;
+        n|N) exit  ;;
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
 
@@ -302,16 +305,16 @@ cronjobAdd() {
     read -r choice
     case $choice in
     # > /dev/null 2>&1
-        1) ! (crontab -l | grep -q "litemd.sh" ) && (crontab -l; echo "0 * * * * $scriptLocation" ) | crontab - ;;
-        2) ! (crontab -l | grep -q "litemd.sh"  ) && (crontab -l; echo "0 3 * * * $scriptLocation") | crontab - ;;
-        3) ! (crontab -l | grep -q "litemd.sh" ) && (crontab -l; echo "0 3 * * 0 $scriptLocation") | crontab - ;;
+        1) ! (crontab -l | grep -q "litemd.sh" ) && (crontab -l; echo "0 * * * * $scriptLocation") | crontab - && interval="hourly" ;;
+        2) ! (crontab -l | grep -q "litemd.sh"  ) && (crontab -l; echo "0 3 * * * $scriptLocation" ) | crontab - && interval="daily" ;;
+        3) ! (crontab -l | grep -q "litemd.sh" ) && (crontab -l; echo "0 3 * * 0 $scriptLocation" ) | crontab - && interval="weekly" ;;
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
     #! (crontab -l | grep -q "SCRIPT_FILENAME") && (crontab -l; echo "20 10 * * * SCRIPT_FILENAME") | crontab -
 
     echo ""
     echo ""
-    echo "Thank you for using LiteMD. LiteMD will recheck $virusDir for the malicious files at the interval you chose."
+    echo "Thank you for using LiteMD. LiteMD will recheck $virusDir for malicious files at the interval: $interval."
     
     exit
 }
