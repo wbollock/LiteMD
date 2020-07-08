@@ -50,10 +50,9 @@ BOLD="\033[1m"
 YELLOW='\033[0;33m'
 
 # ||||TODOs||||
-# TODO: will need to alert user to new changes
-# I like putting it in the MOTD - hey $user, these files may be malicious
-# or hey $user, you're all clean
-# TODO: test on fresh system/install
+# TODO: cronjob won't update MOTD but it does manually
+# maybe it's not running at all?
+# Also docker
 
 
 # FUNCTIONS:
@@ -74,23 +73,27 @@ removeLMD() {
     # if $file exists, rm it
 
     if [ -f $hashDir/$fullHashFile ]; then
-    echo "Removing hashes"
+    echo "✅ Removing hashes"
     rm -f "$hashDir"/"$fullHashFile"
     elif [ -f "$hashDir"/"$kvpairs" ]; then
-    echo "Removing calculated hashes of directory"
+    echo "✅ Removing calculated hashes of directory"
     rm -f "$hashDir"/"$kvpairs"
     elif [ -f "$hashDir"/"$malFiles" ]; then
-    echo "Removing potential malicious file list"
+    echo "✅ Removing potential malicious file list"
     rm -f "$hashDir"/"$malFiles"
     fi
 
-    echo "Removing crontab entries"
+    echo "✅ Removing crontab entries"
     # list crontab, take out the lite.md stuff, put back into crontab
     crontab -l | grep -v 'litemd.sh'  | crontab -
 
-    echo "Cleaning up MOTD"
+    echo "✅ Cleaning up MOTD"
     # remove the match, and the next 3 lines after it
-    sed -i '/-----ALERT | MALWARE FOUND | ALERT-------/,+3 d' $motdFile
+    cp $motdFile motdtmp
+    # sed has to make a temp file and cant in /etc
+    sed -i '/-----ALERT | MALWARE FOUND | ALERT-------/,+3 d' motdtmp
+    # cp it back
+    cp motdtmp $motdFile
     # return perms to standard
     sudo chown "root:root" $motdFile
     echo "Removal complete."
@@ -324,9 +327,9 @@ cronjobAdd() {
 
     echo ""
     echo ""
-    echo " LiteMD will recheck $virusDir for malicious files at the interval: $interval."
+    echo -e "LiteMD will recheck ${BLUE}$virusDir${NC} for malicious files at the interval: $interval."
     echo ""
-    echo "One last thing, I'll need to chown your /etc/motd file to provide alerts (returned to normal on uninstall)"
+    echo -e "${RED}One last thing, your /etc/motd file will be chowned as $USER:$USER ${NC}"
     # ugh this is shitty but i dont know an alternative
     sudo chown "$USER:$USER" /etc/motd
     

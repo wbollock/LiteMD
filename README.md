@@ -1,13 +1,17 @@
-# LiteMD
+# LMD
+> A light shell daemon used to detect if any malware appears in a given directory - especially useful on a SFTP or web hosting server with many users. 
 
-A light daemon used to detect if any malware appears in a given directory - especially useful on a SFTP or web hosting server. The biggest threat is Windows malware downloaded by the user.
-
-Fork from previous project, CrappyAV.
+![rating](https://img.shields.io/badge/rating-★★★★-brightgreen)
+![downloads](https://img.shields.io/badge/downloads-∞%2Fmonth-brightgreen)
+![coverage](https://img.shields.io/badge/coverage-101%25-yellowgreen)
+![version](https://img.shields.io/badge/version-1.0.0-blue)
+![license](https://img.shields.io/badge/license-MIT-red)
+> more badges = more GitHub stars
 
 ![](img/lmd.gif)
 
 ## Specify a Directory
-LiteMD recurisvely calculates a hash of all files in a directory, and checks it against VirusTotal's database of MD5 malware hashes.
+LMD recurisvely calculates a hash of all files in a directory, and checks it against VirusTotal's database of MD5 malware hashes.
 
 ![](img/directoryhash.png)
 
@@ -15,21 +19,23 @@ LiteMD recurisvely calculates a hash of all files in a directory, and checks it 
 
 ## Find Malware
 
-LiteMD can detect malware from the calculcated hash file, and present it to the user. Below is an example of detection of the EICAR test string.
+LMD can detect malware from the calculcated hash file, and present it to the user. Below is an example of detection of the EICAR test string.
 
 ![](img/malfiles.png)
 
 ## Get Alerts on your MOTD
 
-It's not the best method, but better than configuring SMTP. The cronjob will add alerts to /etc/motd.
+It's not the best method, but better than configuring SMTP. A cronjob will add alerts to /etc/motd.
 
 ![](img/motd.png)
 
 ## Usage
 
-Run the script with:
+
 
 ```
+git clone https://github.com/wbollock/LiteMD.git
+cd LiteMd
 ./install.sh
 ```
 
@@ -39,16 +45,14 @@ Cleanly uninstall with:
 ./install.sh -r
 ```
 
-If you're using ZSH, you'll need to mapfile module.
+## Requirements
 
-```
-zmodload zsh/mapfile
-```
+Arch Linux, not tested on other distros.
 
-You'll also need `wget`.
+You'll need `wget` and `cronie`, but that's handled by the install.
 
 
-### Testing
+## Malware Testing
 
 Proven to work with the EICAR test string only.
 
@@ -58,6 +62,6 @@ Gifs made with [ShareX](https://getsharex.com/)
 
 MD5 Hashes from [VirusShare](https://virusshare.com/hashes.4n6)
 
-"VirusShare.com is a repository of malware samples to provide security researchers, incident responders, forensic analysts, and the morbidly curious access to samples of live malicious code."
+>VirusShare.com is a repository of malware samples to provide security researchers, incident responders, forensic analysts, and the morbidly curious access to samples of live malicious code.
 
-John Marks for allowing an open-ended final project one semester, and letting us continue to work on the same project in another class.
+John Marks, for allowing awesome project development
