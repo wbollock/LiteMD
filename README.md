@@ -19,6 +19,12 @@ LiteMD can detect malware from the calculcated hash file, and present it to the 
 
 ![](img/malfiles.png)
 
+## Get Alerts on your MOTD
+
+It's not the best method, but better than configuring SMTP. The cronjob will add alerts to /etc/motd.
+
+![](img/motd.png)
+
 ## Usage
 
 Run the script with:
@@ -51,5 +57,7 @@ Proven to work with the EICAR test string only.
 Gifs made with [ShareX](https://getsharex.com/)
 
 MD5 Hashes from [VirusShare](https://virusshare.com/hashes.4n6)
+
+"VirusShare.com is a repository of malware samples to provide security researchers, incident responders, forensic analysts, and the morbidly curious access to samples of live malicious code."
 
 John Marks for allowing an open-ended final project one semester, and letting us continue to work on the same project in another class.

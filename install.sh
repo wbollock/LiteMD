@@ -29,6 +29,7 @@ fullHashFile=hashlist.txt
 kvpairs=kvpairs.txt
 malFiles=MALICIOUSFILES
 virusDir=$(cat virusDir.info)
+motdFile=/etc/motd
 
 # to have a file we can verify the checking mechanism against
 virusTest=testvirus.txt
@@ -87,7 +88,13 @@ removeLMD() {
     # list crontab, take out the lite.md stuff, put back into crontab
     crontab -l | grep -v 'litemd.sh'  | crontab -
 
+    echo "Cleaning up MOTD"
+    # remove the match, and the next 3 lines after it
+    sed -i '/-----ALERT | MALWARE FOUND | ALERT-------/,+3 d' $motdFile
+    # return perms to standard
+    sudo chown "root:root" $motdFile
     echo "Removal complete."
+    
 }
 
 requirements(){
@@ -123,7 +130,7 @@ allHashes(){
 
     if [ -f $hashDir/$fullHashFile ]; then
         echo -e "${BLUE}Hashes already found. Skipping download.${NC}"
-        echo "Remove $hashDir/$fullHashFile if you believe this is in error."
+        #echo "Remove $hashDir/$fullHashFile if you believe this is in error."
         hashCheck #break out of allHashes
         return
     fi
@@ -235,12 +242,12 @@ hashCheck(){
     # shellcheck doesnt like for file in $(find "$virusDir" -type f);
 
     if [ -f "$hashDir"/"$malFiles" ]; then
-        echo -e "${RED}Overwrite previous hash results? [Y/n]${NC}"
+        echo -e "${RED}Overwrite previous hash results? [y/N]${NC}"
         read -r choice
         case $choice in
         # N default letter
-            y|Y|"") rm -f "$hashDir"/"$malFiles" "$hashDir"/"$kvpairs" ;;
-            n|N) cronjobAdd  ;;
+            y|Y) rm -f "$hashDir"/"$malFiles" "$hashDir"/"$kvpairs" ;;
+            n|N|"") cronjobAdd  ;;
             *) echo -e "${RED}Error...${NC}" && sleep .5
         esac
     fi
@@ -302,19 +309,26 @@ cronjobAdd() {
     # 0 3 * * *
     echo "3) Every Week"    
     # 0 3 * * 0
+    echo "4) [DEBUG] Every Minute"
+    # * * * * *
     read -r choice
     case $choice in
     # > /dev/null 2>&1
         1) ! (crontab -l | grep -q "litemd.sh" ) && (crontab -l; echo "0 * * * * $scriptLocation") | crontab - && interval="hourly" ;;
         2) ! (crontab -l | grep -q "litemd.sh"  ) && (crontab -l; echo "0 3 * * * $scriptLocation" ) | crontab - && interval="daily" ;;
         3) ! (crontab -l | grep -q "litemd.sh" ) && (crontab -l; echo "0 3 * * 0 $scriptLocation" ) | crontab - && interval="weekly" ;;
+        4) ! (crontab -l | grep -q "litemd.sh" ) && (crontab -l; echo "* * * * * $scriptLocation" ) | crontab - && interval="minutely" ;;
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
     #! (crontab -l | grep -q "SCRIPT_FILENAME") && (crontab -l; echo "20 10 * * * SCRIPT_FILENAME") | crontab -
 
     echo ""
     echo ""
-    echo "Thank you for using LiteMD. LiteMD will recheck $virusDir for malicious files at the interval: $interval."
+    echo " LiteMD will recheck $virusDir for malicious files at the interval: $interval."
+    echo ""
+    echo "One last thing, I'll need to chown your /etc/motd file to provide alerts (returned to normal on uninstall)"
+    # ugh this is shitty but i dont know an alternative
+    sudo chown "$USER:$USER" /etc/motd
     
     exit
 }
