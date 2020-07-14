@@ -52,6 +52,10 @@ YELLOW='\033[0;33m'
 # ||||TODOs||||
 # TODO: cronjob won't update MOTD but it does manually
 # maybe it's not running at all?
+# I think i got it, sudo systemctl status cronie
+# check after internet gets faster
+# maybe a demo mode for jmarks?
+# just download eicar test hash?
 # Also docker
 
 
@@ -74,11 +78,7 @@ removeLMD() {
     case $rmChoice in
     # N default letter
 		y|Y|"") 
-        if [ -f $hashDir/$fullHashFile ]; 
-        then 
-        echo "✅ Removing hashes"
-        rm -f "$hashDir"/"$fullHashFile"
-        fi
+        echo "✅ Removing hashes" &&  rm -f "$hashDir"/"$fullHashFile"
         ;;
 		n|N)  ;;
 		*) echo -e "${RED}Error...${NC}" && sleep .5
@@ -105,7 +105,7 @@ removeLMD() {
 
     echo "✅ Cleaning up MOTD"
     # remove the match, and the next 3 lines after it
-    cp $motdFile motdtmp
+    cp $motdFile motdtmp 
     # sed has to make a temp file and cant in /etc
     sed -i '/-----ALERT | MALWARE FOUND | ALERT-------/,+3 d' motdtmp
     # cp it back
