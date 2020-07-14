@@ -68,14 +68,30 @@ removeLMD() {
 		n|N|"") exit ;;
 		*) echo -e "${RED}Error...${NC}" && sleep .5
 	esac
+    echo ""
+    echo -e "${RED}Removal hashes? ~1.1GB+ [Y/n]${NC}"
+    read -r rmChoice
+    case $rmChoice in
+    # N default letter
+		y|Y|"") 
+        if [ -f $hashDir/$fullHashFile ]; 
+        then 
+        echo "✅ Removing hashes"
+        rm -f "$hashDir"/"$fullHashFile"
+        fi
+        ;;
+		n|N)  ;;
+		*) echo -e "${RED}Error...${NC}" && sleep .5
+	esac
+
+
     
 
     # if $file exists, rm it
 
-    if [ -f $hashDir/$fullHashFile ]; then
-    echo "✅ Removing hashes"
-    rm -f "$hashDir"/"$fullHashFile"
-    elif [ -f "$hashDir"/"$kvpairs" ]; then
+    
+    
+    if [ -f "$hashDir"/"$kvpairs" ]; then
     echo "✅ Removing calculated hashes of directory"
     rm -f "$hashDir"/"$kvpairs"
     elif [ -f "$hashDir"/"$malFiles" ]; then
@@ -124,6 +140,10 @@ requirements(){
 
     sudo pacman -S --needed --noconfirm - < pkglist.txt
 
+    echo "Starting and enabling cronie systemd service"
+    sudo systemctl enable cronie.service
+    sudo systemctl start cronie.service
+
     echo ""
     allHashes
 
@@ -149,7 +169,7 @@ allHashes(){
     # N default letter
         y|Y|"") echo "It is recommended you get up, drink water, get some tea, and leave the terminal running. This takes a while."
         sleep 2
-        mkdir hashes ;;
+        mkdir hashes > /dev/null 2>&1 ;;
         n|N) exit  ;;
         *) echo -e "${RED}Error...${NC}" && sleep .5
     esac
@@ -332,6 +352,8 @@ cronjobAdd() {
     echo -e "${RED}One last thing, your /etc/motd file will be chowned as $USER:$USER ${NC}"
     # ugh this is shitty but i dont know an alternative
     sudo chown "$USER:$USER" /etc/motd
+
+    echo "$(pwd)" > pwd.info
     
     exit
 }

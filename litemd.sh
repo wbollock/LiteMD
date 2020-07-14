@@ -1,7 +1,11 @@
 #!/bin/bash
 # script to be run by cronjob to re-scan directories
 # can be run manually
-    
+
+# https://unix.stackexchange.com/questions/38951/what-is-the-working-directory-when-cron-executes-a-job
+# cd to pwd
+cd "$(dirname "$0")";
+
 virusDir=$(cat virusDir.info)
 # debug
 hashDir=hashes
@@ -11,8 +15,11 @@ fullHashFile=hashlist.txt
 kvpairs=kvpairs.txt
 malFiles=MALICIOUSFILES
 
+
 # to have a file we can verify the checking mechanism against
 virusTest=testvirus.txt
+
+
 
     if [ -f "$hashDir"/"$malFiles" ]; then
     # overwrite existing
