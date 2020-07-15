@@ -39,17 +39,29 @@ virusTest=testvirus.txt
         # if you find the hash of the tested file in the list of known malware, malware has been found
         if grep -q "$fileHash" "$hashDir"/"$fullHashFile"; then 
             {
-                echo "-----Malicious File DETECTED - $file----"  
-                echo "File detected on $(date)"
-                echo "$file=$fileHash" 
-                echo "-----Malicious File $file END-----" 
+                 if grep -q "$file" "$hashDir"/"$malFiles"; then
+                    echo "-----Malicious File DETECTED - $file----"  
+                    echo "File detected on $(date)"
+                    echo "$file=$fileHash" 
+                    echo "-----Malicious File $file END-----" 
+                else
+                    sleep 1
+                fi
             } >> "$hashDir"/"$malFiles";
             # UPDATE MOTD
             {
-                echo "-----ALERT | MALWARE FOUND | ALERT-------"  
-                echo "$file"
-                echo "Found on $(date)"
-                echo ""
+                # https://unix.stackexchange.com/questions/223503/how-to-use-grep-when-file-does-not-contain-the-string
+                # if you can't already find $file in /etc/motd, then
+                if grep -q "$file" /etc/motd; then
+                # if $file NOT in motd
+                    echo "-----ALERT | MALWARE FOUND | ALERT-------"  
+                    echo "$file"
+                    echo "Found on $(date)"
+                    echo ""
+                else
+                # do nothing if $file found in /etc/motd
+                    sleep 1
+                fi
             } >> "/etc/motd";
         fi
     done <    <(find "$virusDir" -type f  -print0);
