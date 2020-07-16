@@ -1,0 +1,39 @@
+Docker Image Planning, Findings, and Notes:
+
+Commands:
+
+# Create Alpine Linux in background and keep it going (detached)
+sudo docker run -dit --name alpine alpine:latest 
+
+# Access Alpine Linux container
+sudo docker exec -it alpine sh
+    Findings: wget installed, cron good to go. 
+
+
+
+Thoughts on what I'll need:
+# 2 volumes
+1. /etc/motd
+possibly mount host system /etc/motd into some dir (could be /etc/motd maybe)
+
+Issues: how the hell do I mount a volume on a container I make
+
+
+2. user specified directory (virusDir)
+I guess mount the entire directory the user wants to scan for viruses? Idk how else to give docker Access
+
+Processes:
+run cron inside container, target being user specified volume
+
+run litemd on stuff, output to /etc/motd. i think that'll be fine
+when testing add a line like
+
+Other Thoughts:
+might be easiest to have script run with $1 as virusDir and $2 as /etc/motd path
+I could in theory do this in docker
+
+easiest to not give user ANY choice besides MOTD and specified directory to scan for malware
+
+seperate version of litemd.sh for docker?
+
+
