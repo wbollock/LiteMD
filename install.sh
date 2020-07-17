@@ -49,16 +49,6 @@ BLUE='\033[0;34m'
 BOLD="\033[1m"
 YELLOW='\033[0;33m'
 
-# ||||TODOs||||
-# TODO: cronjob won't update MOTD but it does manually
-# maybe it's not running at all?
-# I think i got it, sudo systemctl status cronie
-# check after internet gets faster
-# maybe a demo mode for jmarks?
-# just download eicar test hash?
-# Also docker
-
-
 # FUNCTIONS:
 
 # removeLMD- Uninstalls LMD
@@ -84,13 +74,8 @@ removeLMD() {
 		*) echo -e "${RED}Error...${NC}" && sleep .5
 	esac
 
-
-    
-
     # if $file exists, rm it
 
-    
-    
     if [ -f "$hashDir"/"$kvpairs" ]; then
     echo "✅ Removing calculated hashes of directory"
     rm -f "$hashDir"/"$kvpairs"
@@ -116,6 +101,7 @@ removeLMD() {
     
 }
 
+# ensures app requirements are met
 requirements(){
 
     echo -e "${RED}Please note this project is designed for Arch Linux.${NC}"
@@ -149,6 +135,7 @@ requirements(){
 
 }
 
+# downloads hashes needed to check for malware
 allHashes(){
 
     if [ -f $hashDir/$fullHashFile ]; then
@@ -228,8 +215,9 @@ allHashes(){
     hashCheck
 }
 
-
+# runs malware check for first time
 hashCheck(){
+
     echo ""
     echo -e "${BLUE}Please specify the directory you'd like LiteMD to focus on (e.g /srv/http, /var/www/html):${NC}"
     # example: Arch Apache2 default = /srv/http
@@ -279,6 +267,7 @@ hashCheck(){
     echo "This could take a while on a big directory (recursive)."
     sleep 2
 
+    # actually does the hash calculation with key value pairs
     while IFS= read -r -d '' file
     do
         fileHash=$(md5sum "$file"  | head -n1 | awk '{print $1;}')
@@ -301,6 +290,7 @@ hashCheck(){
     cronjobAdd
 }
 
+# sets up a cronjob to run litemd.sh, to re-check for malicious files at an interval
 cronjobAdd() {
 
     echo -e "${RED}Would you like to add a cronjob to monitor this directory at an interval? [Y/n]${NC}"
@@ -358,6 +348,7 @@ cronjobAdd() {
     exit
 }
 
+# helps with the flag to uninstall
 while getopts ":r:" opt; do
   case $opt in
     :)
