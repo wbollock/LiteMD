@@ -1,5 +1,8 @@
 Docker Image Planning, Findings, and Notes:
 
+#TODO:
+Will need to create version of script that runs automatically
+
 Commands:
 
 # Create Alpine Linux in background and keep it going (detached)
@@ -36,4 +39,10 @@ easiest to not give user ANY choice besides MOTD and specified directory to scan
 
 seperate version of litemd.sh for docker?
 
+
+# Resources:
+
+https://dominikbraun.io/blog/docker/dockerfile-run-vs-cmd-vs-entrypoint/
+https://www.joyent.com/blog/dockerizing-a-simple-app
+https://wiki.archlinux.org/index.php/docker
 

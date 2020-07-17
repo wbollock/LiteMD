@@ -1,5 +1,20 @@
-# I have no idea what I'm doing
-# Guides used:
-# https://www.joyent.com/blog/dockerizing-a-simple-app
-# https://wiki.archlinux.org/index.php/docker
+# Dockerfile for LMD
+# docker build -t wbollock/litemd:1.0 .
 FROM alpine:latest
+
+# Packages
+RUN apk update && \
+apk add curl && \
+mkdir -p /etc/litemd
+
+# Setup
+COPY litemd_docker.sh /etc/litemd/litemd.sh && \
+install_docker.sh /etc/litemd/install.sh
+
+
+# Program actions
+ENTRYPOINT ["bash"]
+CMD ["/etc/litemd/install.sh"]
+
+# still not sure about the volumes
+
