@@ -4,12 +4,12 @@
 
 # https://unix.stackexchange.com/questions/38951/what-is-the-working-directory-when-cron-executes-a-job
 # cd to pwd
-cd "$(dirname "$0")";
+cd "$(dirname "$0")" || exit;
 
 virusDir=$(cat virusDir.info)
 # debug
 hashDir=hashes
-hashfile=md5_hash
+#hashfile=md5_hash
 fullHashFile=hashlist.txt
 # key value pairs of hash dir
 kvpairs=kvpairs.txt
@@ -17,7 +17,7 @@ malFiles=MALICIOUSFILES
 
 
 # to have a file we can verify the checking mechanism against
-virusTest=testvirus.txt
+#virusTest=testvirus.txt
 
 
 
@@ -66,4 +66,3 @@ virusTest=testvirus.txt
         fi
     done <    <(find "$virusDir" -type f  -print0);
     exit
-
