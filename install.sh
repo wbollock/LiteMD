@@ -43,11 +43,11 @@ hashSource="https://virusshare.com/hashes.4n6"
 # used for changing text color
 
 RED='\033[0;31m'
-GREEN='\033[0;32m'
+#GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 BLUE='\033[0;34m'
-BOLD="\033[1m"
-YELLOW='\033[0;33m'
+#BOLD="\033[1m"
+#YELLOW='\033[0;33m'
 
 # FUNCTIONS:
 
@@ -97,6 +97,11 @@ removeLMD() {
     cp motdtmp $motdFile
     # return perms to standard
     sudo chown "root:root" $motdFile
+
+    # uninstall previously required packages
+    sudo pacman -R - < pkglist.txt
+    echo "✅ Cleaning up packages (cronie/wget)"
+    echo ""
     echo "Removal complete."
     
 }
@@ -250,7 +255,7 @@ hashCheck(){
 
     fi
 
-    # shellcheck doesnt like for file in $(find "$virusDir" -type f);
+    # shellchek doesnt like for file in $(find "$virusDir" -type f);
 
     if [ -f "$hashDir"/"$malFiles" ]; then
         echo -e "${RED}Overwrite previous hash results? [y/N]${NC}"
@@ -315,7 +320,7 @@ cronjobAdd() {
     fi
 
     echo -e "${BLUE}Please choose the interval you'd like for the cronjob:${NC}"
-    echo "(Defaults to 3am of day/week, and will run under $(echo $USER))"
+    echo "(Defaults to 3am of day/week, and will run under $(echo "$USER"))"
     echo "1) Every Hour"
     # 0 * * * *
     echo "2) Every Day"
@@ -340,10 +345,10 @@ cronjobAdd() {
     echo -e "LiteMD will recheck ${BLUE}$virusDir${NC} for malicious files at the interval: $interval."
     echo ""
     echo -e "${RED}One last thing, your /etc/motd file will be chowned as $USER:$USER ${NC}"
-    # ugh this is shitty but i dont know an alternative
+
     sudo chown "$USER:$USER" /etc/motd
 
-    echo "$(pwd)" > pwd.info
+    pwd > pwd.info
     
     exit
 }
@@ -371,6 +376,3 @@ sleep 3
 
 # start the function loop
 requirements
-
-
-
