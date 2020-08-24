@@ -6,7 +6,8 @@ FROM alpine:latest
 RUN apk update && \
 apk add curl && \
 apk add bash && \
-mkdir -p /etc/litemd
+mkdir -p /etc/litemd \
+mkdir -p /etc/litemd/hashes
 
 # Setup
 COPY litemd_docker.sh /etc/litemd/litemd.sh
