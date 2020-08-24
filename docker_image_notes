@@ -46,3 +46,8 @@ https://dominikbraun.io/blog/docker/dockerfile-run-vs-cmd-vs-entrypoint/
 https://www.joyent.com/blog/dockerizing-a-simple-app
 https://wiki.archlinux.org/index.php/docker
 
+# Current Issues
+md5sum: can't open 'testvirus.txt': No such file or directory
+chown: unknown group
+Look more into volumes, how to specify in docker run CLI
+
