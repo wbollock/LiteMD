@@ -37,7 +37,7 @@ scriptLocation=$(readlink -f litemd.sh)
 
 
 # hash source
-hashSource="https://virusshare.com/hashes.4n6"
+hashSource="https://virusshare.com/hashes"
 
 
 # used for changing text color
@@ -187,13 +187,13 @@ allHashes(){
     # have to adjust url based on file number
         if ((i < 10 ))
         then
-            wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashes/VirusShare_0000"$i".md5
+            wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashfiles/VirusShare_0000"$i".md5
         elif ((i >= 10 && i < 100 ))
         then
-            wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashes/VirusShare_000"$i".md5
+            wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashfiles/VirusShare_000"$i".md5
         elif ((i >= 100 ))
         then
-            wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashes/VirusShare_00"$i".md5
+            wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashfiles/VirusShare_00"$i".md5
         fi
 
     done
