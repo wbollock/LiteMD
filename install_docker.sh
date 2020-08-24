@@ -75,10 +75,8 @@ allHashes(){
 
     #download all 374++ hash files
     #for ((i=1; i<="$maxPage"; i++))
-    i=1
-    for i in "$maxPage"
+    for ((i=1;i<="$maxPage";i++))
     do
-    
     # have to adjust url based on file number
         if ((i < 10 ))
         then
@@ -90,7 +88,7 @@ allHashes(){
         then
             wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashfiles/VirusShare_00"$i".md5
         fi
-    i=$((i+1))
+
     done
  
     # clean up my earlier curl sins
