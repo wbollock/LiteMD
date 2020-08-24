@@ -6,8 +6,7 @@
 # cd to pwd
 cd "$(dirname "$0")";
 
-# set in DockerFile
-virusDir=/monitoring
+virusDir=$(cat virusDir.info)
 # debug
 hashDir=hashes
 hashfile=md5_hash

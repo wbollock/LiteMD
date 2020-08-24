@@ -36,7 +36,7 @@ scriptLocation=$(readlink -f litemd.sh)
 
 
 # hash source
-hashSource="https://virusshare.com/hashes.4n6"
+hashSource="https://virusshare.com/hashes"
 
 
 # used for changing text color
@@ -48,8 +48,8 @@ BLUE='\033[0;34m'
 BOLD="\033[1m"
 YELLOW='\033[0;33m'
 
-# unique to docker
-virusDir="$1"
+# unique to DockerFile
+virusDir=/monitoring
 # saving dir for other script
 echo "$virusDir" > virusDir.info
 
@@ -57,7 +57,7 @@ echo "$virusDir" > virusDir.info
 allHashes(){
 
     
-    mkdir hashes > /dev/null 2>&1 ;;
+    mkdir hashes > /dev/null 2>&1
 
 
     # root page of web directory
@@ -69,14 +69,16 @@ allHashes(){
 
     echo -e "${RED}Downloading $maxPage hash files${NC}"
     echo ""
-    sleep 1
     # can iterate easily through the links. https://virusshare.com/hashes/VirusShare_00001.md5
     # https://virusshare.com/hashes/VirusShare_00002.md5, etc
     # ends at highest number on page
 
     #download all 374++ hash files
-    for ((i=1;i<="$maxPage";i++))
+    #for ((i=1; i<="$maxPage"; i++))
+    i=1
+    for i in "$maxPage"
     do
+    
     # have to adjust url based on file number
         if ((i < 10 ))
         then
@@ -88,15 +90,13 @@ allHashes(){
         then
             wget -O $hashDir/"$hashfile"_"$i" https://virusshare.com/hashes/VirusShare_00"$i".md5
         fi
-
+    i=$((i+1))
     done
  
     # clean up my earlier curl sins
     rm -f $hashRootPage
 
-    sleep 2
     echo -e "${RED}Trimming and combining files...${NC}"
-    sleep 2
     # need to remove headers now (#)
     for file in "${hashDir:?}/"*
     do
@@ -123,7 +123,7 @@ hashCheck(){
     # first run
     
     echo "$virusDir" > virusDir.info
-    fi
+    
     # for cron job
 
     if [ ! -f $hashDir/$kvpairs ]; then
@@ -230,7 +230,7 @@ cronjobAdd() {
     echo ""
     echo -e "${RED}One last thing, your /etc/motd file will be chowned as $USER:$USER ${NC}"
     # ugh this is shitty but i dont know an alternative
-    sudo chown "$USER:$USER" /etc/motd
+    chown "$USER:$USER" /etc/motd
 
     echo "$(pwd)" > pwd.info
     
@@ -255,7 +255,7 @@ echo "Note: a capital letter [y/N] means that is the default response"
 echo ""
 echo "Install or Configuration Commencing"
 echo ""
-sleep 3
+
 
 # start the function loop
 # requirements
