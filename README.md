@@ -1,12 +1,8 @@
 # LMD
-> A light shell daemon used to detect if any malware appears in a given directory - especially useful on a SFTP or web hosting server with many users. 
+A light shell daemon used to detect if any malware appears in a given directory - especially useful on a SFTP or web hosting server with many users. 
 
-![rating](https://img.shields.io/badge/rating-★★★★-brightgreen)
-![downloads](https://img.shields.io/badge/downloads-∞%2Fmonth-brightgreen)
-![coverage](https://img.shields.io/badge/coverage-101%25-yellowgreen)
-![version](https://img.shields.io/badge/version-1.0.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-red)
-> more badges = more GitHub stars
+
 
 ![](img/lmd.gif)
 
